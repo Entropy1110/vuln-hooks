@@ -11,13 +11,16 @@ import {BalanceDelta} from "v4-core/src/types/BalanceDelta.sol";
 import {PoolId, PoolIdLibrary} from "v4-core/src/types/PoolId.sol";
 import {CurrencyLibrary, Currency} from "v4-core/src/types/Currency.sol";
 import {PoolSwapTest} from "v4-core/src/test/PoolSwapTest.sol";
-import {Counter} from "../src/Counter.sol";
 import {StateLibrary} from "v4-core/src/libraries/StateLibrary.sol";
 
 import {LiquidityAmounts} from "v4-core/test/utils/LiquidityAmounts.sol";
 import {IPositionManager} from "v4-periphery/src/interfaces/IPositionManager.sol";
 import {EasyPosm} from "./utils/EasyPosm.sol";
 import {Fixtures} from "./utils/Fixtures.sol";
+import {Constants} from "v4-core/test/utils/Constants.sol";
+
+import {ProxyContract} from "../src/ProxyContract.sol";
+import {Implementation} from "../src/Implementation.sol";
 
 contract CounterTest is Test, Fixtures {
     using EasyPosm for IPositionManager;
@@ -25,8 +28,9 @@ contract CounterTest is Test, Fixtures {
     using CurrencyLibrary for Currency;
     using StateLibrary for IPoolManager;
 
-    Counter hook;
     PoolId poolId;
+    address payable mockAddr;
+    address payable hookAddr;
 
     uint256 tokenId;
     int24 tickLower;
@@ -39,19 +43,21 @@ contract CounterTest is Test, Fixtures {
 
         deployAndApprovePosm(manager);
 
-        // Deploy the hook to an address with the correct flags
-        address flags = address(
-            uint160(
-                Hooks.BEFORE_SWAP_FLAG | Hooks.AFTER_SWAP_FLAG | Hooks.BEFORE_ADD_LIQUIDITY_FLAG
-                    | Hooks.BEFORE_REMOVE_LIQUIDITY_FLAG
-            ) ^ (0x4444 << 144) // Namespace the hook to avoid collisions
-        );
-        bytes memory constructorArgs = abi.encode(manager); //Add all the necessary constructor arguments from the hook
-        deployCodeTo("Counter.sol:Counter", constructorArgs, flags);
-        hook = Counter(flags);
 
+        mockAddr = payable(address(uint160(Hooks.BEFORE_ADD_LIQUIDITY_FLAG | Hooks.AFTER_ADD_LIQUIDITY_FLAG)));
+        hookAddr = payable(Constants.ALL_HOOKS);
+
+        deployCodeTo("Implementation.sol:Implementation", hookAddr);
+
+        
+        ProxyContract proxy = new ProxyContract();
+
+        vm.etch(mockAddr, address(proxy).code);
+        ProxyContract(mockAddr).setImplementation(hookAddr);
+
+        
         // Create the pool
-        key = PoolKey(currency0, currency1, 3000, 60, IHooks(hook));
+        key = PoolKey(currency0, currency1, 3000, 60, IHooks(mockAddr));
         poolId = key.toId();
         manager.initialize(key, SQRT_PRICE_1_1, ZERO_BYTES);
 
@@ -81,24 +87,13 @@ contract CounterTest is Test, Fixtures {
         );
     }
 
-    function test_exploit() public {
-        // Perform a test swap //
-        bool zeroForOne = true;
-        int256 amountSpecified = -1e18; // negative number indicates exact input swap!
-        BalanceDelta swapDelta = swap(key, zeroForOne, amountSpecified, ZERO_BYTES);
-        // ------------------- //
-
-
-        hook.setImpl(address(new MaliciousContract()));
-
-        vm.expectRevert();
-        swapDelta = swap(key, zeroForOne, amountSpecified, ZERO_BYTES);
-    }
-}
-
-
-contract MaliciousContract {
-    function attack() public {
-        revert("I am a malicious contract");
+    function test_if_proxy() public {
+        //get slot 0 value of the proxy contract
+        bytes32 slot0 = vm.load(mockAddr, 0);
+        address couldBeImplementation = address(uint160(uint(slot0)));
+        if (couldBeImplementation != address(0)) {
+            bool isImplementation = couldBeImplementation.code.length > 0;
+            assertFalse(isImplementation, "Hook is an proxy");
+        }
     }
 }
