@@ -65,7 +65,7 @@ contract Counter is BaseHook {
 
     function afterSwap(address, PoolKey calldata key, IPoolManager.SwapParams calldata, BalanceDelta, bytes calldata)
         external
-        override
+        override 
         returns (bytes4, int128)
     {
         afterSwapCount[key.toId()]++;
