@@ -93,7 +93,7 @@ contract CounterTest is Test, Fixtures {
         address couldBeImplementation = address(uint160(uint(slot0)));
         if (couldBeImplementation != address(0)) {
             bool isImplementation = couldBeImplementation.code.length > 0;
-            assertFalse(isImplementation, "Hook is an proxy");
+            assertFalse(isImplementation, "Hook might be an proxy");
         }
     }
 }
