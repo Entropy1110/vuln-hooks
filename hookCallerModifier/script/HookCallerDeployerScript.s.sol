@@ -3,23 +3,23 @@ pragma solidity ^0.8.0;
 
 import {MockERC20} from "solmate/src/test/utils/mocks/MockERC20.sol";
 
-import {PoolManager} from "v4-core/PoolManager.sol";
-import {IPoolManager} from "v4-core/interfaces/IPoolManager.sol";
+import {PoolManager} from "v4-core/src/PoolManager.sol";
+import {IPoolManager} from "v4-core/src/interfaces/IPoolManager.sol";
 
-import {PoolId, PoolIdLibrary} from "v4-core/types/PoolId.sol";
-import {Currency, CurrencyLibrary} from "v4-core/types/Currency.sol";
-import {StateLibrary} from "v4-core/libraries/StateLibrary.sol";
-import {PoolKey} from "v4-core/types/PoolKey.sol";
+import {PoolId, PoolIdLibrary} from "v4-core/src/types/PoolId.sol";
+import {Currency, CurrencyLibrary} from "v4-core/src/types/Currency.sol";
+import {StateLibrary} from "v4-core/src/libraries/StateLibrary.sol";
+import {PoolKey} from "v4-core/src/types/PoolKey.sol";
 
-import {Hooks} from "v4-core/libraries/Hooks.sol";
-import {IHooks} from "v4-core/interfaces/IHooks.sol";
-import {TickMath} from "v4-core/libraries/TickMath.sol";
+import {Hooks} from "v4-core/src/libraries/Hooks.sol";
+import {IHooks} from "v4-core/src/interfaces/IHooks.sol";
+import {TickMath} from "v4-core/src/libraries/TickMath.sol";
 
 // Our contracts
 import {HookCallerModifier} from "../src/HookCallerModifier.sol";
 import {HookMiner} from "./HookMiner.sol";
 import {ERC20} from "@openzeppelin/contracts/token/ERC20/ERC20.sol";
-import {PoolModifyLiquidityTest} from "v4-core/test/PoolModifyLiquidityTest.sol";
+import {PoolModifyLiquidityTest} from "v4-core/src/test/PoolModifyLiquidityTest.sol";
 
 import "forge-std/Script.sol";
 
@@ -106,32 +106,32 @@ contract HookCallerDeployerScript is Script {
     }
 
 
-    function testModifyLiquidity() public {
-        vm.startBroadcast();
-        Token0 a = Token0(0x6f0cD9aC99c852bDBA06F72db93078cbA80A32F5);
-        Token1 b = Token1(0x8dB7EFd30A632eD236eAbde82286551f843D5487);
-        hookAddr = 0xce12A4E8980a70B0f4Bf16d89dD734dDb507Cac0;
-        a.mint(address(this), 100 ether);
-        b.mint(address(this), 100 ether);
-        Currency aa = Currency.wrap(address(a));
-        Currency bb = Currency.wrap(address(b));
-        key = PoolKey(aa, bb, 0, 60, IHooks(hookAddr));
+    // function testModifyLiquidity() public {
+    //     vm.startBroadcast();
+    //     Token0 a = Token0(0x6f0cD9aC99c852bDBA06F72db93078cbA80A32F5);
+    //     Token1 b = Token1(0x8dB7EFd30A632eD236eAbde82286551f843D5487);
+    //     hookAddr = 0xce12A4E8980a70B0f4Bf16d89dD734dDb507Cac0;
+    //     a.mint(address(this), 100 ether);
+    //     b.mint(address(this), 100 ether);
+    //     Currency aa = Currency.wrap(address(a));
+    //     Currency bb = Currency.wrap(address(b));
+    //     key = PoolKey(aa, bb, 0, 60, IHooks(hookAddr));
 
-        a.approve(address(modifyLiquidityRouter), 100 ether);
-        b.approve(address(modifyLiquidityRouter), 100 ether);
+    //     a.approve(address(modifyLiquidityRouter), 100 ether);
+    //     b.approve(address(modifyLiquidityRouter), 100 ether);
 
 
-        modifyLiquidityRouter.modifyLiquidity(
-            key,
-            IPoolManager.ModifyLiquidityParams({
-                tickLower: -60,
-                tickUpper: 60,
-                liquidityDelta: 10 ether,
-                salt: bytes32(0)
-            }),
-            ""
-        );
-    }
+    //     modifyLiquidityRouter.modifyLiquidity(
+    //         key,
+    //         IPoolManager.ModifyLiquidityParams({
+    //             tickLower: -60,
+    //             tickUpper: 60,
+    //             liquidityDelta: 10 ether,
+    //             salt: bytes32(0)
+    //         }),
+    //         ""
+    //     );
+    // }
 
     function onERC1155Received(
         address,

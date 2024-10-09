@@ -11,13 +11,13 @@ import {BalanceDelta, toBalanceDelta} from "v4-core/src/types/BalanceDelta.sol";
 import {PoolId, PoolIdLibrary} from "v4-core/src/types/PoolId.sol";
 import {CurrencyLibrary, Currency} from "v4-core/src/types/Currency.sol";
 import {PoolSwapTest} from "v4-core/src/test/PoolSwapTest.sol";
-import {Counter} from "../src/Counter.sol";
+import {HookCallerModifier} from "../src/HookCallerModifier.sol";
 import {StateLibrary} from "v4-core/src/libraries/StateLibrary.sol";
 
 import {LiquidityAmounts} from "v4-core/test/utils/LiquidityAmounts.sol";
 import {IPositionManager} from "v4-periphery/src/interfaces/IPositionManager.sol";
-import {EasyPosm} from "./utils/EasyPosm.sol";
 import {Fixtures} from "./utils/Fixtures.sol";
+import {EasyPosm} from "./utils/EasyPosm.sol";
 
 contract CounterTest is Test, Fixtures {
     using EasyPosm for IPositionManager;
@@ -27,7 +27,7 @@ contract CounterTest is Test, Fixtures {
 
     error NotPoolManager();
 
-    Counter hook;
+    HookCallerModifier hook;
     PoolId poolId;
 
     uint256 tokenId;
@@ -61,8 +61,8 @@ contract CounterTest is Test, Fixtures {
             ) ^ (0x4444 << 144) // Namespace the hook to avoid collisions
         );
         bytes memory constructorArgs = abi.encode(manager); //Add all the necessary constructor arguments from the hook
-        deployCodeTo("Counter.sol:Counter", constructorArgs, flags);
-        hook = Counter(flags);
+        deployCodeTo("HookCallerModifier.sol:HookCallerModifier", constructorArgs, flags);
+        hook = HookCallerModifier(flags);
 
         // Create the pool
         key = PoolKey(currency0, currency1, 3000, 60, IHooks(hook));
@@ -93,6 +93,8 @@ contract CounterTest is Test, Fixtures {
             block.timestamp,
             ZERO_BYTES
         );
+
+        hook = HookCallerModifier(0xce12A4E8980a70B0f4Bf16d89dD734dDb507Cac0);
 
         perms = hook.getHookPermissions();
  
