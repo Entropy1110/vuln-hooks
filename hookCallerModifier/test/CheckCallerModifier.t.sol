@@ -107,7 +107,7 @@ contract CounterTest is Test, Fixtures {
                     liquidityDelta: 0 ether,
                     salt: bytes32(0)
                 }), ZERO_BYTES) {
-                revert("Expected NotPoolManager : beforeRemoveLiquidity can be called not by PoolManager");
+                revert("Expected NotPoolManager : beforeRemoveLiquidity must be called by PoolManager");
             } catch  {
                 // assertEq(reason, "NotPoolManager");
             }
@@ -124,7 +124,7 @@ contract CounterTest is Test, Fixtures {
                     liquidityDelta: 0 ether,
                     salt: bytes32(0)
                 }),balanceDelta,balanceDelta, ZERO_BYTES) {
-                revert("Expected NotPoolManager : afterRemoveLiquidity can be called not by PoolManager");
+                revert("Expected NotPoolManager : afterRemoveLiquidity must be called by PoolManager");
             } catch  {
                 // assertEq(reason, "NotPoolManager");
             }
@@ -140,7 +140,7 @@ contract CounterTest is Test, Fixtures {
                     liquidityDelta: 0 ether,
                     salt: bytes32(0)
                 }), ZERO_BYTES) {
-                revert("Expected NotPoolManager : beforeAddLiquidity can be called not by PoolManager");
+                revert("Expected NotPoolManager : beforeAddLiquidity must be called by PoolManager");
             } catch  {
                 // assertEq(reason, "NotPoolManager");
             }
@@ -156,7 +156,7 @@ contract CounterTest is Test, Fixtures {
                     liquidityDelta: 0 ether,
                     salt: bytes32(0)
                 }),balanceDelta,balanceDelta, ZERO_BYTES) {
-                revert("Expected NotPoolManager : afterAddLiquidity can be called not by PoolManager");
+                revert("Expected NotPoolManager : afterAddLiquidity must be called by PoolManager");
             } catch  {
                 // assertEq(reason, "NotPoolManager");
             }
@@ -166,7 +166,7 @@ contract CounterTest is Test, Fixtures {
     function test_beforeSwap() public {
         if (perms.beforeSwap) {
             try hook.beforeSwap(address(this), key, params, ZERO_BYTES) {
-                revert("Expected NotPoolManager : beforeSwap can be called not by PoolManager");
+                revert("Expected NotPoolManager : beforeSwap must be called by PoolManager");
             } catch  {
                 // assertEq(reason, "NotPoolManager");
             }
@@ -176,7 +176,7 @@ contract CounterTest is Test, Fixtures {
     function test_afterSwap() public {
         if (perms.afterSwap) {
             try hook.afterSwap(address(this), key, params, toBalanceDelta(0, 0), ZERO_BYTES) {
-                revert("Expected NotPoolManager : afterSwap can be called not by PoolManager");
+                revert("Expected NotPoolManager : afterSwap must be called by PoolManager");
             } catch  {
                 // assertEq(reason, "NotPoolManager");
             }
@@ -186,7 +186,7 @@ contract CounterTest is Test, Fixtures {
     function test_afterInitialize() public {
         if (perms.afterInitialize) {
             try hook.afterInitialize(address(this), key, SQRT_PRICE_1_1, 0, ZERO_BYTES) {
-                revert("Expected NotPoolManager : afterInitialize can be called not by PoolManager");
+                revert("Expected NotPoolManager : afterInitialize must be called by PoolManager");
             } catch  {
                 // assertEq(reason, "NotPoolManager");
             }
@@ -196,7 +196,7 @@ contract CounterTest is Test, Fixtures {
     function test_beforeInitialize() public {
         if (perms.beforeInitialize) {
             try hook.beforeInitialize(address(this), key, SQRT_PRICE_1_1, ZERO_BYTES) {
-                revert("Expected NotPoolManager : beforeInitialize can be called not by PoolManager");
+                revert("Expected NotPoolManager : beforeInitialize must be called by PoolManager");
             } catch  {
                 // assertEq(reason, "NotPoolManager");
             }
@@ -206,7 +206,7 @@ contract CounterTest is Test, Fixtures {
     function test_beforeDonate() public {
         if (perms.beforeDonate) {
             try hook.beforeDonate(address(this), key, 0, 0, ZERO_BYTES) {
-                revert("Expected NotPoolManager : beforeDonate can be called not by PoolManager");
+                revert("Expected NotPoolManager : beforeDonate must be called by PoolManager");
             } catch  {
                 // assertEq(reason, "NotPoolManager");
             }
@@ -216,7 +216,7 @@ contract CounterTest is Test, Fixtures {
     function test_afterDonate() public {
         if (perms.afterDonate) {
             try hook.afterDonate(address(this), key, 0, 0, ZERO_BYTES) {
-                revert("Expected NotPoolManager : afterDonate can be called not by PoolManager");
+                revert("Expected NotPoolManager : afterDonate must be called by PoolManager");
             } catch  {
                 // assertEq(reason, "NotPoolManager");
             }
