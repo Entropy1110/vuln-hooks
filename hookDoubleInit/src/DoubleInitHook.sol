@@ -7,20 +7,26 @@ import {PoolKey} from "v4-core/types/PoolKey.sol";
 import {BalanceDelta, BalanceDeltaLibrary} from "v4-core/types/BalanceDelta.sol";
 import {BeforeSwapDelta, BeforeSwapDeltaLibrary} from "v4-core/types/BeforeSwapDelta.sol";
 import {Hooks} from "v4-core/libraries/Hooks.sol";
+import {PoolId, PoolIdLibrary} from "v4-core/types/PoolId.sol";
 
-contract ExampleHook is BaseHook {
+contract DoubleInitHook is BaseHook {
+
+    address public hookOperator;
+    uint256 public maxSwapCounter;
+    mapping (PoolId => uint256) public swapCounter;
+
     constructor(IPoolManager _manager) BaseHook(_manager) {}
 
     function getHookPermissions() public pure override returns (Hooks.Permissions memory) {
         return Hooks.Permissions({
-            beforeInitialize: false,
+            beforeInitialize: true,
             afterInitialize: false,
-            beforeAddLiquidity: true,
+            beforeAddLiquidity: false,
             afterAddLiquidity: false,
-            beforeRemoveLiquidity: true,
+            beforeRemoveLiquidity: false,
             afterRemoveLiquidity: false,
             beforeSwap: true,
-            afterSwap: true,
+            afterSwap: false,
             beforeDonate: false,
             afterDonate: false,
             beforeSwapReturnDelta: false,
@@ -31,100 +37,35 @@ contract ExampleHook is BaseHook {
     }
 
     function beforeInitialize(
-        address, /* sender **/
+        address sender, /* sender **/
         PoolKey calldata, /* key **/
         uint160, /* sqrtPriceX96 **/
         bytes calldata /* hookData **/
     ) external override returns (bytes4) {
+        hookOperator = sender;
         return this.beforeInitialize.selector;
-    }
-
-    function afterInitialize(
-        address, /* sender **/
-        PoolKey calldata, /* key **/
-        uint160, /* sqrtPriceX96 **/
-        int24, /* tick **/
-        bytes calldata /* hookData **/
-    ) external override returns (bytes4) {
-        return this.afterInitialize.selector;
-    }
-
-    function beforeAddLiquidity(
-        address, /* sender **/
-        PoolKey calldata, /* key **/
-        IPoolManager.ModifyLiquidityParams calldata, /* params **/
-        bytes calldata /* hookData **/
-    ) external override returns (bytes4) {
-        return this.beforeAddLiquidity.selector;
-    }
-
-    function afterAddLiquidity(
-        address, /* sender **/
-        PoolKey calldata, /* key **/
-        IPoolManager.ModifyLiquidityParams calldata, /* params **/
-        BalanceDelta, /* delta **/
-        BalanceDelta, /* feeDelta **/
-        bytes calldata /* hookData **/
-    ) external override returns (bytes4, BalanceDelta) {
-        return (this.afterAddLiquidity.selector, BalanceDeltaLibrary.ZERO_DELTA);
-    }
-
-    function beforeRemoveLiquidity(
-        address, /* sender **/
-        PoolKey calldata, /* key **/
-        IPoolManager.ModifyLiquidityParams calldata, /* params **/
-        bytes calldata /* hookData **/
-    ) external override returns (bytes4) {
-        return this.beforeRemoveLiquidity.selector;
-    }
-
-    function afterRemoveLiquidity(
-        address, /* sender **/
-        PoolKey calldata, /* key **/
-        IPoolManager.ModifyLiquidityParams calldata, /* params **/
-        BalanceDelta, /* delta **/
-        BalanceDelta, /* feeDelta **/
-        bytes calldata /* hookData **/
-    ) external override returns (bytes4, BalanceDelta) {
-        return (this.afterRemoveLiquidity.selector, BalanceDeltaLibrary.ZERO_DELTA);
     }
 
     function beforeSwap(
         address, /* sender **/
-        PoolKey calldata, /* key **/
+        PoolKey calldata key, /* key **/
         IPoolManager.SwapParams calldata, /* params **/
         bytes calldata /* hookData **/
     ) external override returns (bytes4, BeforeSwapDelta, uint24) {
+        swapCounter[key.toId()] += 1;
+        if (swapCounter[key.toId()] > maxSwapCounter) {
+            maxSwapCounter = swapCounter[key.toId()];
+        }
         return (this.beforeSwap.selector, BeforeSwapDeltaLibrary.ZERO_DELTA, 0);
     }
 
-    function afterSwap(
-        address, /* sender **/
-        PoolKey calldata, /* key **/
-        IPoolManager.SwapParams calldata, /* params **/
-        BalanceDelta, /* delta **/
-        bytes calldata /* hookData **/
-    ) external override returns (bytes4, int128) {
-        return (this.afterSwap.selector, 0);
+
+    function withdrawAll() external payable{
+        require(msg.sender == hookOperator, "DoubleInitHook: not operator");
+        (bool success, ) = payable(hookOperator).call{value : address(this).balance}("");
+        require(success, "DoubleInitHook: withdraw failed");
     }
 
-    function beforeDonate(
-        address, /* sender **/
-        PoolKey calldata, /* key **/
-        uint256, /* amount0 **/
-        uint256, /* amount1 **/
-        bytes calldata /* hookData **/
-    ) external override returns (bytes4) {
-        return this.beforeDonate.selector;
-    }
+    receive() external payable {}
 
-    function afterDonate(
-        address, /* sender **/
-        PoolKey calldata, /* key **/
-        uint256, /* amount0 **/
-        uint256, /* amount1 **/
-        bytes calldata /* hookData **/
-    ) external override returns (bytes4) {
-        return this.afterDonate.selector;
-    }
 }
