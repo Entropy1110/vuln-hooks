@@ -8,6 +8,7 @@ import {Proxy} from "@openzeppelin/contracts/proxy/Proxy.sol";
 contract ProxyContract is Proxy {
     /// @notice If set, delegatecall to implementation after tracking call
     address internal impl;
+    string public name = "entropy";
 
     /// @notice exposes implementation contract address
     function _implementation() internal view override returns (address) {
