@@ -42,6 +42,7 @@ contract DoubleInitHook is BaseHook {
         uint160, /* sqrtPriceX96 **/
         bytes calldata /* hookData **/
     ) external override returns (bytes4) {
+        require(hookOperator == address(0), "DoubleInitHook: already initialized");
         hookOperator = sender;
         return this.beforeInitialize.selector;
     }

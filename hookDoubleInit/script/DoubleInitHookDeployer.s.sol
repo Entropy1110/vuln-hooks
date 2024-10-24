@@ -34,7 +34,7 @@ contract DoubleInitHookDeployer is Script {
         uint160 flags = Hooks.BEFORE_INITIALIZE_FLAG | Hooks.BEFORE_SWAP_FLAG;
         (address addr, uint hookSalt) = HookMiner.find(address(deployer), flags, implBytecode, abi.encode(address(manager)));
         addr = address(new DoubleInitHook{salt: bytes32(hookSalt)}(IPoolManager(address(manager))));
-        hookAddr = payable(0xb15ce080C38508a50a46c827c6D596da1e03a080);
+        hookAddr = payable(addr);
 
         console.log("hookAddr : ", hookAddr);
         console.log("currency0 : ", address(Currency.unwrap(currency0)));
@@ -42,7 +42,7 @@ contract DoubleInitHookDeployer is Script {
 
         key = PoolKey(currency0, currency1, 3000, 60, IHooks(hookAddr));
 
-        manager.initialize(key, SQRT_PRICE_1_1, ZERO_BYTES);
+        // manager.initialize(key, SQRT_PRICE_1_1, ZERO_BYTES);
     }
 
 }
