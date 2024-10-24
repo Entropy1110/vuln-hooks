@@ -16,19 +16,20 @@ import {StateLibrary} from "v4-core/src/libraries/StateLibrary.sol";
 
 import {LiquidityAmounts} from "v4-core/test/utils/LiquidityAmounts.sol";
 import {IPositionManager} from "v4-periphery/src/interfaces/IPositionManager.sol";
-import {EasyPosm} from "./utils/EasyPosm.sol";
-import {Fixtures} from "./utils/Fixtures.sol";
 import {Constants} from "v4-core/test/utils/Constants.sol";
 
 import {ProxyContract} from "../src/ProxyContract.sol";
 import {Implementation} from "../src/Implementation.sol";
 
-contract CounterTest is Test, Fixtures {
-    using EasyPosm for IPositionManager;
+contract CounterTest is Test {
     using PoolIdLibrary for PoolKey;
     using CurrencyLibrary for Currency;
     using StateLibrary for IPoolManager;
-
+    address public hookAddr;
+    Currency currency0;
+    Currency currency1;
+    IPoolManager manager = IPoolManager(0x38EB8B22Df3Ae7fb21e92881151B365Df14ba967);
+    PoolKey key;
     PoolId poolId;
     address payable mockAddr;
     address payable hookAddr;
@@ -37,56 +38,6 @@ contract CounterTest is Test, Fixtures {
     int24 tickLower;
     int24 tickUpper;
 
-    function setUp() public {
-        // creates the pool manager, utility routers, and test tokens
-        deployFreshManagerAndRouters();
-        deployMintAndApprove2Currencies();
-
-        deployAndApprovePosm(manager);
-
-
-        mockAddr = payable(address(uint160(Hooks.BEFORE_ADD_LIQUIDITY_FLAG | Hooks.AFTER_ADD_LIQUIDITY_FLAG)));
-        hookAddr = payable(Constants.ALL_HOOKS);
-
-        deployCodeTo("Implementation.sol:Implementation", hookAddr);
-
-        
-        ProxyContract proxy = new ProxyContract();
-
-        vm.etch(mockAddr, address(proxy).code);
-        ProxyContract(mockAddr).setImplementation(hookAddr);
-
-        
-        // Create the pool
-        key = PoolKey(currency0, currency1, 3000, 60, IHooks(mockAddr));
-        poolId = key.toId();
-        manager.initialize(key, SQRT_PRICE_1_1, ZERO_BYTES);
-
-        // Provide full-range liquidity to the pool
-        tickLower = TickMath.minUsableTick(key.tickSpacing);
-        tickUpper = TickMath.maxUsableTick(key.tickSpacing);
-
-        uint128 liquidityAmount = 100e18;
-
-        (uint256 amount0Expected, uint256 amount1Expected) = LiquidityAmounts.getAmountsForLiquidity(
-            SQRT_PRICE_1_1,
-            TickMath.getSqrtPriceAtTick(tickLower),
-            TickMath.getSqrtPriceAtTick(tickUpper),
-            liquidityAmount
-        );
-
-        (tokenId,) = posm.mint(
-            key,
-            tickLower,
-            tickUpper,
-            liquidityAmount,
-            amount0Expected + 1,
-            amount1Expected + 1,
-            address(this),
-            block.timestamp,
-            ZERO_BYTES
-        );
-    }
 
     function test_if_proxy() public {
         //get slot 0 value of the proxy contract

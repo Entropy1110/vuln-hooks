@@ -85,7 +85,7 @@ contract HookCallerDeployerScript is Script {
         );
         
 
-        manager = IPoolManager(0x39BF2eFF94201cfAA471932655404F63315147a4);
+        manager = IPoolManager(	0x38EB8B22Df3Ae7fb21e92881151B365Df14ba967);
 
         bytes memory implBytecode = type(HookCallerModifier).creationCode;
         (address addr, uint hookSalt) = HookMiner.find(address(deployer), flags, implBytecode, abi.encode(manager));

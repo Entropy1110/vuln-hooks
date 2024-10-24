@@ -2,7 +2,7 @@
     "data": {
         "currency0": "0x0000000000000000000000000000000000000000",
         "currency1": "0x6f0cd9ac99c852bdba06f72db93078cba80a32f5",
-        "fee": 1000,
+        "fee": 3000,
         "tickSpacing": 60,
         "hooks": "0xb15ce080C38508a50a46c827c6D596da1e03a080"
     }

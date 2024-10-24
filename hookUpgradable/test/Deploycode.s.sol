@@ -36,11 +36,11 @@ contract CounterTest is Script {
     function run() public {
         vm.startBroadcast();
         // creates the pool manager, utility routers, and test tokens
-        manager = IPoolManager(0x39BF2eFF94201cfAA471932655404F63315147a4);
+        manager = IPoolManager(0x38EB8B22Df3Ae7fb21e92881151B365Df14ba967);
         address deployer = 0x4e59b44847b379578588920cA78FbF26c0B4956C;
 
-        Token0 token0 = Token0(0x6f0cD9aC99c852bDBA06F72db93078cbA80A32F5);
-        Token1 token1 = Token1(0x8dB7EFd30A632eD236eAbde82286551f843D5487);
+        Token0 token0 = Token0(0x0000000000000000000000000000000000000000);
+        Token1 token1 = Token1(0x6f0cD9aC99c852bDBA06F72db93078cbA80A32F5);
         
         currency0 = Currency.wrap(address(token0));
         currency1 = Currency.wrap(address(token1));

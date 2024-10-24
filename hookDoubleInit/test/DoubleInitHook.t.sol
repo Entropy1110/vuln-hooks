@@ -29,7 +29,7 @@ contract DoubleInitHookTest is Test {
         currency0 = Currency.wrap(_currency0);
         currency1 = Currency.wrap(_currency1);
 
-        key = PoolKey(currency0, currency1, 1000, 60, IHooks(hookAddr));
+        key = PoolKey(currency0, currency1, _fee+1, 60, IHooks(hookAddr));
 
         try manager.initialize(key, SQRT_PRICE_1_1, ZERO_BYTES)
         {
